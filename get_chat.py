@@ -17,11 +17,17 @@ def create_csv(data):
 client = TelegramClient(phone_number, api_id=1072074, api_hash="542c45e1f3b9417a974e6666d72051bf")
 
 
+# async def user_info(list_chat):
+#     for chat in list_chat:
+#         user = await client(functions.users.GetFullUserRequest(id=chat['sender_id']))
+#         print(user.stringify())
+
+
 async def getChat():
     all_chat = []
     rooms = await client.get_dialogs()
     for room in rooms:
-        async for message in client.iter_messages(room.id, limit=2500):
+        async for message in client.iter_messages(room.id, limit=100):
             res = {
                 'room_id'   : room.id,
                 'room_name' : room.name,
@@ -30,6 +36,8 @@ async def getChat():
                 'time'      : message.date
             }
             all_chat.append(res)
+            
+    # await user_info(all_chat)
     print('create and write to csv')
     create_csv(all_chat)
 
