@@ -4,43 +4,29 @@ import csv
 
 phone_number = "+62857xxx"
 
-def create_csv(data):
+def create_csv():
     with open(f'{phone_number}_chat.csv', 'w', newline='') as f:
         fieldnames = ['room_id', 'room_name', 'sender_id', 'chat', 'time']
         thewritter = csv.DictWriter(f, fieldnames=fieldnames)
         thewritter.writeheader()
 
-        for obj in data:
-            thewritter.writerow({'room_id': obj['room_id'],'room_name': obj['room_name'], 'sender_id': obj['sender_id'], 'chat': obj['chat'], 'time': obj['time']})
+def insert_to_csv(data):
+    with open(f'{phone_number}_chat.csv', 'a') as f:
+        thewritter = csv.writer(f)
+        thewritter.writerow(data)
 
 
 client = TelegramClient(phone_number, api_id=1072074, api_hash="542c45e1f3b9417a974e6666d72051bf")
 
 
-# async def user_info(list_chat):
-#     for chat in list_chat:
-#         user = await client(functions.users.GetFullUserRequest(id=chat['sender_id']))
-#         print(user.stringify())
-
-
 async def getChat():
-    all_chat = []
+    create_csv()
     rooms = await client.get_dialogs()
     for room in rooms:
-        async for message in client.iter_messages(room.id, limit=100):
-            res = {
-                'room_id'   : room.id,
-                'room_name' : room.name,
-                'sender_id' : message.from_id,
-                'chat'      : message.message if message.message != None else '',
-                'time'      : message.date
-            }
-            all_chat.append(res)
+        async for message in client.iter_messages(room.id, limit=2500):
+            res = [room.id, room.name, message.from_id, message.message if message.message != None else '', message.date]
+            insert_to_csv(res)
             
-    # await user_info(all_chat)
-    print('create and write to csv')
-    create_csv(all_chat)
-
 
 with client:
     client.loop.run_until_complete(getChat())
